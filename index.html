@@ -174,24 +174,37 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eef0f7;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         th {
             background: linear-gradient(135deg, #4b6cb7 0%, #2c529f 100%);
             color: white;
-            padding: 20px;
             font-weight: 600;
             font-size: 16px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
+        th:nth-child(1) { width: 25%; }  /* 1-so'z */
+        th:nth-child(2) { width: 25%; }  /* 2-so'z */
+        th:nth-child(3) { width: 25%; }  /* Belgi */
+        th:nth-child(4) { width: 25%; }  /* 3-so'z */
+
         td {
-            padding: 20px;
-            border-bottom: 1px solid #eef0f7;
             color: #2d3436;
             font-size: 17px;
-            font-weight: 500;
+            font-weight: 600;
+            padding: 18px;
         }
 
         tr:last-child td {
@@ -398,8 +411,8 @@
                 <thead>
                     <tr>
                         <th>1-so'z</th>
-                        <th>Belgi</th>
                         <th>2-so'z</th>
+                        <th>Belgi</th>
                         <th>3-so'z</th>
                     </tr>
                 </thead>
@@ -409,7 +422,7 @@
     </div>
 
     <script>
-        let allResults = [];
+        let allResults = [];  // Barcha fayllarning natijalari
         let uploadedFilesList = [];  // Yuklangan fayllar ro'yxati
 
         function capitalizeFirstLetter(string) {
@@ -435,48 +448,55 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const text = e.target.result;
-                const words = text.split(/\s+/).filter(word => word.length > 0);
-                allResults = [];
+                const results = [];
 
-                for (let i = 0; i < words.length - 2; i++) {
-                    const currentWord = words[i];
-                    const nextWord = words[i + 1] || '';
-                    const thirdWord = words[i + 2] || '';
+                if (punctuation === 'all') {
+                    // Barcha belgilar uchun
+                    const regex = new RegExp(`([^\\s]+)\\s+([^\\s]+)\\s*([.,;:?!–("")...])\\s+([^\\s]+)`, 'g');
+                    let match;
 
-                    if (punctuation === 'all') {
-                        const match = currentWord.match(/[.,;:?!–()"...]$/);
-                        if (match) {
-                            const mark = match[0];
-                            const firstWord = cleanWord(currentWord);
-                            const cleanSecondWord = cleanWord(nextWord);
-                            const cleanThirdWord = cleanWord(thirdWord);
-                            
-                            if (firstWord && cleanSecondWord && cleanThirdWord) {
-                                allResults.push({
-                                    first: capitalizeFirstLetter(firstWord),
-                                    mark: mark,
-                                    second: capitalizeFirstLetter(cleanSecondWord),
-                                    third: capitalizeFirstLetter(cleanThirdWord)
-                                });
-                            }
-                        }
-                    } else if (currentWord.endsWith(punctuation)) {
-                        const firstWord = cleanWord(currentWord);
-                        const cleanSecondWord = cleanWord(nextWord);
-                        const cleanThirdWord = cleanWord(thirdWord);
+                    while ((match = regex.exec(text)) !== null) {
+                        const firstWord = cleanWord(match[1]);
+                        const secondWord = cleanWord(match[2]);
+                        const mark = match[3];
+                        const thirdWord = cleanWord(match[4]);
 
-                        if (firstWord && cleanSecondWord && cleanThirdWord) {
-                            allResults.push({
+                        if (firstWord && secondWord && thirdWord) {
+                            results.push({
                                 first: capitalizeFirstLetter(firstWord),
+                                second: capitalizeFirstLetter(secondWord),
+                                mark: mark,
+                                third: capitalizeFirstLetter(thirdWord)
+                            });
+                        }
+                    }
+                } else {
+                    // Tanlangan belgi uchun
+                    const regex = new RegExp(`([^\\s]+)\\s+([^\\s]+)\\s*\\${punctuation}\\s+([^\\s]+)`, 'g');
+                    let match;
+
+                    while ((match = regex.exec(text)) !== null) {
+                        const firstWord = cleanWord(match[1]);
+                        const secondWord = cleanWord(match[2]);
+                        const thirdWord = cleanWord(match[3]);
+
+                        if (firstWord && secondWord && thirdWord) {
+                            results.push({
+                                first: capitalizeFirstLetter(firstWord),
+                                second: capitalizeFirstLetter(secondWord),
                                 mark: punctuation,
-                                second: capitalizeFirstLetter(cleanSecondWord),
-                                third: capitalizeFirstLetter(cleanThirdWord)
+                                third: capitalizeFirstLetter(thirdWord)
                             });
                         }
                     }
                 }
+
+                // Yangi natijalarni qo'shish
+                allResults = allResults.concat(results);
                 updateTable();
+                updateUploadedFiles();
             };
+
             reader.readAsText(file);
         }
 
@@ -487,10 +507,80 @@
             allResults.forEach(result => {
                 const row = tbody.insertRow();
                 row.insertCell(0).textContent = result.first;
-                row.insertCell(1).textContent = result.mark;
-                row.insertCell(2).textContent = result.second;
+                row.insertCell(1).textContent = result.second;
+                row.insertCell(2).textContent = result.mark;
                 row.insertCell(3).textContent = result.third;
             });
+        }
+
+        function downloadResult() {
+            if (allResults.length === 0) {
+                alert('Natijalar mavjud emas');
+                return;
+            }
+
+            // Fayl nomi uchun joriy vaqt
+            const now = new Date();
+            const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`;
+
+            // Ustun kengliklari
+            const col1Width = 20;
+            const col2Width = 20;
+            const col3Width = 15;
+            const col4Width = 20;
+
+            // Sarlavhani yaratish
+            const header1 = '1-so\'z'.padEnd(col1Width, ' ');
+            const header2 = '2-so\'z'.padEnd(col2Width, ' ');
+            const header3 = 'Belgi'.padEnd(col3Width, ' ');
+            const header4 = '3-so\'z';
+            
+            let content = `${header1}${header2}${header3}${header4}\n`;
+            content += ''.padEnd(75, '-') + '\n';
+            
+            // Ma'lumotlarni qo'shish
+            allResults.forEach(result => {
+                const firstWord = result.first.padEnd(col1Width, ' ');
+                const secondWord = result.second.padEnd(col2Width, ' ');
+                const mark = result.mark.padEnd(col3Width, ' ');
+                const thirdWord = result.third;
+                content += `${firstWord}${secondWord}${mark}${thirdWord}\n`;
+            });
+
+            // Faylni saqlash uchun dialog
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tahlil_natijasi_${timestamp}.txt`;
+            
+            // Faylni saqlash uchun dialog
+            const options = {
+                suggestedName: `tahlil_natijasi_${timestamp}.txt`,
+                types: [{
+                    description: 'Text Files',
+                    accept: { 'text/plain': ['.txt'] },
+                }],
+            };
+            
+            // Agar brauzer File System Access API ni qo'llab-quvvatlasa
+            if ('showSaveFilePicker' in window) {
+                window.showSaveFilePicker(options)
+                    .then(async (handle) => {
+                        const writable = await handle.createWritable();
+                        await writable.write(content);
+                        await writable.close();
+                    })
+                    .catch((err) => {
+                        // Agar dialog bekor qilinsa yoki xato bo'lsa, oddiy usulda saqlash
+                        a.click();
+                    });
+            } else {
+                // Eski usul - to'g'ridan-to'g'ri yuklash
+                a.click();
+            }
+            
+            window.URL.revokeObjectURL(url);
         }
 
         function saveToFile() {
@@ -531,39 +621,6 @@
                 `;
                 filesDiv.appendChild(fileItem);
             });
-        }
-
-        function downloadResult() {
-            // Ustun kengliklari
-            const col1Width = 20;
-            const col2Width = 15;
-            const col3Width = 20;
-            const col4Width = 20;
-
-            // Sarlavhani yaratish
-            const header1 = '1-so\'z'.padEnd(col1Width, ' ');
-            const header2 = 'Belgi'.padEnd(col2Width, ' ');
-            const header3 = '2-so\'z'.padEnd(col3Width, ' ');
-            const header4 = '3-so\'z';
-            
-            let content = `${header1}${header2}${header3}${header4}\n`;
-            
-            // Ma'lumotlarni qo'shish
-            allResults.forEach(result => {
-                const firstWord = result.first.padEnd(col1Width, ' ');
-                const mark = result.mark.padEnd(col2Width, ' ');
-                const secondWord = result.second.padEnd(col3Width, ' ');
-                const thirdWord = result.third;
-                content += `${firstWord}${mark}${secondWord}${thirdWord}\n`;
-            });
-
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'tahlil_natijasi.txt';
-            a.click();
-            window.URL.revokeObjectURL(url);
         }
     </script>
 </body>
