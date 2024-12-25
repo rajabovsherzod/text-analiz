@@ -2,7 +2,9 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text Analiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -22,7 +24,7 @@
             max-width: 1100px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
-            padding: 40px;
+            padding: 30px;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
@@ -52,8 +54,8 @@
 
         .input-group {
             display: flex;
-            gap: 20px;
-            margin-bottom: 40px;
+            gap: 15px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
@@ -134,14 +136,14 @@
             min-width: 150px;
         }
 
-        .button-download{
+        .button-download {
             background: linear-gradient(135deg, #28a745 0%, #218838 100%);
             color: white;
             font-weight: 600;
             padding: 15px 35px;
         }
 
-        .button-ok{
+        .button-ok {
             background: linear-gradient(135deg, #4b6cb7 0%, #2c529f 100%);
             color: white;
             font-weight: 600;
@@ -166,13 +168,12 @@
 
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 30px;
+            border-collapse: collapse;
+            margin-top: 15px;
             background: white;
-            border-radius: 15px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         th {
@@ -189,7 +190,7 @@
             padding: 20px;
             border-bottom: 1px solid #eef0f7;
             color: #2d3436;
-            font-size: 17px;  /* o'lcham oshirildi */
+            font-size: 17px;
             font-weight: 500;
         }
 
@@ -211,16 +212,156 @@
                 gap: 15px;
             }
 
+            .file-input-wrapper {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+
             .file-input-wrapper,
             select,
             button {
                 width: 100%;
             }
 
-            th, td {
+            th,
+            td {
                 padding: 15px 10px;
                 font-size: 14px;
             }
+        }
+
+        .upload-section {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .uploaded-files {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 10px 0;
+        }
+
+        .file-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+            color: white;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: fit-content;
+        }
+
+        .file-item i {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+        }
+
+        .file-item span {
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+        }
+
+        .file-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-input-button {
+            background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);
+            padding: 12px 25px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .file-input-button i {
+            font-size: 18px;
+        }
+
+        .custom-select {
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            font-size: 16px;
+            width: 250px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+        }
+
+        .custom-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .process-button {
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .process-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .process-button i {
+            margin-right: 10px;
+        }
+
+        .result-section {
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -229,13 +370,13 @@
         <h2>Text Analiz Dasturi</h2>
         <div class="input-group">
             <div class="file-input-wrapper">
-                <input type="file" id="fileInput" accept=".txt">
+                <input type="file" id="fileInput" accept=".txt" onchange="handleFileSelect(this)">
                 <div class="file-input-button">
                     <i class="fas fa-file-upload"></i>
-                    Faylni tanlang
+                    <span style="font-weight: 700;">Fayl yuklang</span>
                 </div>
             </div>
-            <select id="punctuation">
+            <select id="punctuationSelect" class="custom-select">
                 <option value=".">Nuqta (.)</option>
                 <option value=",">Vergul (,)</option>
                 <option value=";">Nuqtali vergul (;)</option>
@@ -243,72 +384,106 @@
                 <option value="?">So'roq belgisi (?)</option>
                 <option value="!">Undov belgisi (!)</option>
                 <option value="–">Tire (–)</option>
-                <option value="(">Qavslar (())</option>
-                <option value='"'>Qoshtirnoq ("")</option>
+                <option value="("">Qavslar (())</option>
+                <option value='""'>Qoshtirnoq ("")</option>
                 <option value="...">Uch nuqta (...)</option>
                 <option value="all">Barchasi</option>
             </select>
             <button class="button-ok" onclick="processFile()">OK</button>
             <button class="button-download" onclick="downloadResult()">Yuklab olish</button>
         </div>
-        <table id="resultTable">
-            <thead>
-                <tr>
-                    <th>1-so'z</th>
-                    <th>Belgi</th>
-                    <th>2-so'z</th>
-                    <th>3-so'z</th>
-                </tr>
-            </thead>
-            <tbody id="resultBody"></tbody>
-        </table>
+        <div class="uploaded-files" id="uploadedFiles"></div>
+        <div class="result-section">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>1-so'z</th>
+                        <th>Belgi</th>
+                        <th>2-so'z</th>
+                        <th>3-so'z</th>
+                    </tr>
+                </thead>
+                <tbody id="resultBody"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         let allResults = [];
+        let uploadedFilesList = [];  // Yuklangan fayllar ro'yxati
 
         function capitalizeFirstLetter(string) {
+            if (!string) return '';
             return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        function cleanWord(word) {
+            // Barcha maxsus belgilarni olib tashlash
+            return word.replace(/[^a-zA-Zа-яА-ЯёЁa-zA-Z\u0080-\u1FFF\u2C00-\uD7FF\w']/g, '');
         }
 
         function processFile() {
             const fileInput = document.getElementById('fileInput');
-            const punctuation = document.getElementById('punctuation').value;
+            const punctuation = document.getElementById('punctuationSelect').value;
             const file = fileInput.files[0];
 
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const text = e.target.result;
-                    const words = text.split(/\s+/);
-                    
-                    for (let i = 0; i < words.length - 2; i++) {
-                        const currentWord = words[i];
-                        if (currentWord.endsWith(punctuation) || (punctuation === 'all' && /[.,;:?!–()"...]$/.test(currentWord))) {
-                            const mark = currentWord.match(/[.,;:?!–()"...]+$/)[0];
-                            const firstWord = currentWord.slice(0, -mark.length);
-                            const secondWord = words[i + 1] || '';
-                            const thirdWord = words[i + 2] || '';
+            if (!file) {
+                alert('Iltimos, fayl tanlang!');
+                return;
+            }
 
-                            const result = {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const words = text.split(/\s+/).filter(word => word.length > 0);
+                allResults = [];
+
+                for (let i = 0; i < words.length - 2; i++) {
+                    const currentWord = words[i];
+                    const nextWord = words[i + 1] || '';
+                    const thirdWord = words[i + 2] || '';
+
+                    if (punctuation === 'all') {
+                        const match = currentWord.match(/[.,;:?!–()"...]$/);
+                        if (match) {
+                            const mark = match[0];
+                            const firstWord = cleanWord(currentWord);
+                            const cleanSecondWord = cleanWord(nextWord);
+                            const cleanThirdWord = cleanWord(thirdWord);
+                            
+                            if (firstWord && cleanSecondWord && cleanThirdWord) {
+                                allResults.push({
+                                    first: capitalizeFirstLetter(firstWord),
+                                    mark: mark,
+                                    second: capitalizeFirstLetter(cleanSecondWord),
+                                    third: capitalizeFirstLetter(cleanThirdWord)
+                                });
+                            }
+                        }
+                    } else if (currentWord.endsWith(punctuation)) {
+                        const firstWord = cleanWord(currentWord);
+                        const cleanSecondWord = cleanWord(nextWord);
+                        const cleanThirdWord = cleanWord(thirdWord);
+
+                        if (firstWord && cleanSecondWord && cleanThirdWord) {
+                            allResults.push({
                                 first: capitalizeFirstLetter(firstWord),
-                                mark: mark,
-                                second: capitalizeFirstLetter(secondWord),
-                                third: capitalizeFirstLetter(thirdWord)
-                            };
-                            allResults.push(result);
+                                mark: punctuation,
+                                second: capitalizeFirstLetter(cleanSecondWord),
+                                third: capitalizeFirstLetter(cleanThirdWord)
+                            });
                         }
                     }
-                    updateTable();
-                };
-                reader.readAsText(file);
-            }
+                }
+                updateTable();
+            };
+            reader.readAsText(file);
         }
 
         function updateTable() {
             const tbody = document.getElementById('resultBody');
             tbody.innerHTML = '';
-            
+
             allResults.forEach(result => {
                 const row = tbody.insertRow();
                 row.insertCell(0).textContent = result.first;
@@ -318,8 +493,8 @@
             });
         }
 
-        function downloadResult() {
-            let content = '';
+        function saveToFile() {
+            let content = '1-so\'z\tBelgi\t2-so\'z\t3-so\'z\n';
             allResults.forEach(result => {
                 content += `${result.first}\t${result.mark}\t${result.second}\t${result.third}\n`;
             });
@@ -328,7 +503,65 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'natija.txt';
+            a.download = 'tahlil_natijasi.txt';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (!uploadedFilesList.includes(file.name)) {
+                    uploadedFilesList.push(file.name);
+                    updateUploadedFiles();
+                }
+            }
+        }
+
+        function updateUploadedFiles() {
+            const filesDiv = document.getElementById('uploadedFiles');
+            filesDiv.innerHTML = '';
+            
+            uploadedFilesList.forEach(fileName => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <i class="fas fa-file-alt"></i>
+                    <span>${fileName}</span>
+                `;
+                filesDiv.appendChild(fileItem);
+            });
+        }
+
+        function downloadResult() {
+            // Ustun kengliklari
+            const col1Width = 20;
+            const col2Width = 15;
+            const col3Width = 20;
+            const col4Width = 20;
+
+            // Sarlavhani yaratish
+            const header1 = '1-so\'z'.padEnd(col1Width, ' ');
+            const header2 = 'Belgi'.padEnd(col2Width, ' ');
+            const header3 = '2-so\'z'.padEnd(col3Width, ' ');
+            const header4 = '3-so\'z';
+            
+            let content = `${header1}${header2}${header3}${header4}\n`;
+            
+            // Ma'lumotlarni qo'shish
+            allResults.forEach(result => {
+                const firstWord = result.first.padEnd(col1Width, ' ');
+                const mark = result.mark.padEnd(col2Width, ' ');
+                const secondWord = result.second.padEnd(col3Width, ' ');
+                const thirdWord = result.third;
+                content += `${firstWord}${mark}${secondWord}${thirdWord}\n`;
+            });
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'tahlil_natijasi.txt';
             a.click();
             window.URL.revokeObjectURL(url);
         }
