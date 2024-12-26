@@ -195,10 +195,11 @@
             letter-spacing: 1px;
         }
 
-        th:nth-child(1) { width: 25%; }  /* 1-so'z */
-        th:nth-child(2) { width: 25%; }  /* 2-so'z */
-        th:nth-child(3) { width: 25%; }  /* Belgi */
-        th:nth-child(4) { width: 25%; }  /* 3-so'z */
+        th:nth-child(1) { width: 25%; }  /* Fayl nomi */
+        th:nth-child(2) { width: 25%; }  /* 1-so'z */
+        th:nth-child(3) { width: 25%; }  /* 2-so'z */
+        th:nth-child(4) { width: 15%; }  /* Belgi */
+        th:nth-child(5) { width: 25%; }  /* 3-so'z */
 
         td {
             color: #2d3436;
@@ -317,12 +318,12 @@
             gap: 10px;
             font-weight: 500;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .file-input-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
 
         .file-input-button i {
@@ -376,6 +377,34 @@
         .result-section {
             margin-top: 15px;
         }
+
+        .file-list {
+            margin-top: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-list > div {
+            background: linear-gradient(135deg, #E3F2FD 0%, #90CAF9 100%);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border-left: 4px solid #2196F3;
+        }
+
+        .file-list > div:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+
+        .file-list > div:last-child {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
@@ -405,11 +434,14 @@
             <button class="button-ok" onclick="processFile()">OK</button>
             <button class="button-download" onclick="downloadResult()">Yuklab olish</button>
         </div>
-        <div class="uploaded-files" id="uploadedFiles"></div>
+        <div id="fileList" class="file-list">
+            <!-- Yuklangan fayllar shu yerda ko'rsatiladi -->
+        </div>
         <div class="result-section">
             <table id="resultTable">
                 <thead>
                     <tr>
+                        <th>Fayl nomi</th>
                         <th>1-so'z</th>
                         <th>2-so'z</th>
                         <th>Belgi</th>
@@ -423,35 +455,57 @@
 
     <script>
         let allResults = [];  // Barcha fayllarning natijalari
-        let uploadedFilesList = [];  // Yuklangan fayllar ro'yxati
-
-        function capitalizeFirstLetter(string) {
-            if (!string) return '';
-            return string.charAt(0).toUpperCase() + string.slice(1);
-        }
+        let uploadedFiles = [];  // Yuklangan fayllar ro'yxati
+        let fileContents = new Map(); // Fayllar matnini saqlash uchun
 
         function cleanWord(word) {
-            // Barcha maxsus belgilarni olib tashlash
-            return word.replace(/[^a-zA-Zа-яА-ЯёЁa-zA-Z\u0080-\u1FFF\u2C00-\uD7FF\w']/g, '');
+            // O'zbek tilidagi O' harfini saqlash uchun
+            let matches = word.match(/[OoUu]'[a-zA-Z]/g);
+            if (matches) {
+                matches.forEach(match => {
+                    word = word.replace(match, match.toLowerCase());
+                });
+            }
+            
+            // Belgilarni tozalash
+            word = word.replace(/[^a-zA-Z0-9\s'а-яА-ЯёЁўЎғҒқҚҳҲ]/g, '');
+            
+            // Bo'sh joylarni olib tashlash
+            word = word.trim();
+            
+            return word;
+        }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (!uploadedFiles.some(f => f.name === file.name)) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        fileContents.set(file.name, e.target.result);
+                        uploadedFiles.push(file);
+                        updateUploadedFiles();
+                    };
+                    reader.readAsText(file);
+                }
+            }
         }
 
         function processFile() {
-            const fileInput = document.getElementById('fileInput');
-            const punctuation = document.getElementById('punctuationSelect').value;
-            const file = fileInput.files[0];
-
-            if (!file) {
+            if (uploadedFiles.length === 0) {
                 alert('Iltimos, fayl tanlang!');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result;
+            const punctuation = document.getElementById('punctuationSelect').value;
+            allResults = []; // Natijalarni tozalash
+
+            // Har bir faylni tartib bilan qayta ishlash
+            uploadedFiles.forEach(file => {
+                const text = fileContents.get(file.name);
                 const results = [];
 
                 if (punctuation === 'all') {
-                    // Barcha belgilar uchun
                     const regex = new RegExp(`([^\\s]+)\\s+([^\\s]+)\\s*([.,;:?!–("")...])\\s+([^\\s]+)`, 'g');
                     let match;
 
@@ -463,15 +517,15 @@
 
                         if (firstWord && secondWord && thirdWord) {
                             results.push({
-                                first: capitalizeFirstLetter(firstWord),
-                                second: capitalizeFirstLetter(secondWord),
+                                fileName: file.name,
+                                first: firstWord,
+                                second: secondWord,
                                 mark: mark,
-                                third: capitalizeFirstLetter(thirdWord)
+                                third: thirdWord
                             });
                         }
                     }
                 } else {
-                    // Tanlangan belgi uchun
                     const regex = new RegExp(`([^\\s]+)\\s+([^\\s]+)\\s*\\${punctuation}\\s+([^\\s]+)`, 'g');
                     let match;
 
@@ -482,22 +536,20 @@
 
                         if (firstWord && secondWord && thirdWord) {
                             results.push({
-                                first: capitalizeFirstLetter(firstWord),
-                                second: capitalizeFirstLetter(secondWord),
+                                fileName: file.name,
+                                first: firstWord,
+                                second: secondWord,
                                 mark: punctuation,
-                                third: capitalizeFirstLetter(thirdWord)
+                                third: thirdWord
                             });
                         }
                     }
                 }
 
-                // Yangi natijalarni qo'shish
                 allResults = allResults.concat(results);
-                updateTable();
-                updateUploadedFiles();
-            };
+            });
 
-            reader.readAsText(file);
+            updateTable();
         }
 
         function updateTable() {
@@ -506,120 +558,162 @@
 
             allResults.forEach(result => {
                 const row = tbody.insertRow();
-                row.insertCell(0).textContent = result.first;
-                row.insertCell(1).textContent = result.second;
-                row.insertCell(2).textContent = result.mark;
-                row.insertCell(3).textContent = result.third;
+                row.insertCell(0).textContent = result.fileName;
+                row.insertCell(1).textContent = result.first;
+                row.insertCell(2).textContent = result.second;
+                row.insertCell(3).textContent = result.mark;
+                row.insertCell(4).textContent = result.third;
             });
         }
 
         function downloadResult() {
-            if (allResults.length === 0) {
-                alert('Natijalar mavjud emas');
+            const selectElement = document.getElementById('punctuationSelect');
+            if (!selectElement) {
+                console.error("Select element not found");
                 return;
             }
 
-            // Fayl nomi uchun joriy vaqt
-            const now = new Date();
-            const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`;
+            // Barcha belgilar ro'yxati
+            const allSymbols = ['!', '?', '.', ',', ':', ';', '-', '(', ')', '"'];
+            
+            // Tanlangan belgilarni olish
+            let selectedSymbols = Array.from(selectElement.selectedOptions).map(option => option.value);
+            
+            // Agar "all" tanlangan bo'lsa, barcha belgilarni ishlatamiz
+            if (selectedSymbols.includes('all')) {
+                selectedSymbols = allSymbols;
+            }
 
-            // Ustun kengliklari
-            const col1Width = 20;
-            const col2Width = 20;
-            const col3Width = 15;
-            const col4Width = 20;
+            if (selectedSymbols.length === 0) {
+                alert("Iltimos, belgilarni tanlang");
+                return;
+            }
 
-            // Sarlavhani yaratish
-            const header1 = '1-so\'z'.padEnd(col1Width, ' ');
-            const header2 = '2-so\'z'.padEnd(col2Width, ' ');
-            const header3 = 'Belgi'.padEnd(col3Width, ' ');
-            const header4 = '3-so\'z';
-            
-            let content = `${header1}${header2}${header3}${header4}\n`;
-            content += ''.padEnd(75, '-') + '\n';
-            
-            // Ma'lumotlarni qo'shish
-            allResults.forEach(result => {
-                const firstWord = result.first.padEnd(col1Width, ' ');
-                const secondWord = result.second.padEnd(col2Width, ' ');
-                const mark = result.mark.padEnd(col3Width, ' ');
-                const thirdWord = result.third;
-                content += `${firstWord}${secondWord}${mark}${thirdWord}\n`;
-            });
+            const col1Width = 25;
+            const col2Width = 25;
+            const col3Width = 10;
+            const col4Width = 25;
 
-            // Faylni saqlash uchun dialog
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `tahlil_natijasi_${timestamp}.txt`;
-            
-            // Faylni saqlash uchun dialog
-            const options = {
-                suggestedName: `tahlil_natijasi_${timestamp}.txt`,
-                types: [{
-                    description: 'Text Files',
-                    accept: { 'text/plain': ['.txt'] },
-                }],
-            };
-            
-            // Agar brauzer File System Access API ni qo'llab-quvvatlasa
-            if ('showSaveFilePicker' in window) {
-                window.showSaveFilePicker(options)
-                    .then(async (handle) => {
-                        const writable = await handle.createWritable();
-                        await writable.write(content);
-                        await writable.close();
-                    })
-                    .catch((err) => {
-                        // Agar dialog bekor qilinsa yoki xato bo'lsa, oddiy usulda saqlash
-                        a.click();
+            selectedSymbols.forEach(symbol => {
+                let result = '';
+                let currentFileName = '';
+                
+                // Faqat tanlangan belgiga mos keladigan natijalarni filtrlash
+                const filteredResults = allResults.filter(item => item.mark === symbol);
+                
+                if (filteredResults.length > 0) {
+                    // Fayllar bo'yicha guruhlash
+                    const fileGroups = {};
+                    filteredResults.forEach(item => {
+                        if (!fileGroups[item.fileName]) {
+                            fileGroups[item.fileName] = [];
+                        }
+                        fileGroups[item.fileName].push(item);
                     });
-            } else {
-                // Eski usul - to'g'ridan-to'g'ri yuklash
-                a.click();
-            }
-            
-            window.URL.revokeObjectURL(url);
-        }
 
-        function saveToFile() {
-            let content = '1-so\'z\tBelgi\t2-so\'z\t3-so\'z\n';
-            allResults.forEach(result => {
-                content += `${result.first}\t${result.mark}\t${result.second}\t${result.third}\n`;
-            });
+                    // Har bir fayl uchun natijalarni formatlash
+                    Object.keys(fileGroups).forEach(fileName => {
+                        result += `(${fileName})\n`;
+                        result += '1-so\'z'.padEnd(col1Width) + 
+                                 '2-so\'z'.padEnd(col2Width) + 
+                                 'Belgi'.padEnd(col3Width) + 
+                                 '3-so\'z\n';
+                        result += '-'.repeat(85) + '\n';
 
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'tahlil_natijasi.txt';
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
+                        fileGroups[fileName].forEach(item => {
+                            const first = item.first.length > col1Width - 2 ? 
+                                item.first.substring(0, col1Width - 3) + '.' : 
+                                item.first;
+                            const second = item.second.length > col2Width - 2 ? 
+                                item.second.substring(0, col2Width - 3) + '.' : 
+                                item.second;
+                            const third = item.third.length > col4Width - 2 ? 
+                                item.third.substring(0, col4Width - 3) + '.' : 
+                                item.third;
 
-        function handleFileSelect(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                if (!uploadedFilesList.includes(file.name)) {
-                    uploadedFilesList.push(file.name);
-                    updateUploadedFiles();
+                            result += first.padEnd(col1Width) + 
+                                     second.padEnd(col2Width) + 
+                                     item.mark.padEnd(col3Width) + 
+                                     third + '\n';
+                        });
+                        result += '\n\n';
+                    });
+
+                    // Fayl nomini belgi bo'yicha aniqlash
+                    let fileName = 'tahlil_natijasi(';
+                    switch(symbol) {
+                        case '.': fileName += 'nuqta'; break;
+                        case ',': fileName += 'vergul'; break;
+                        case ';': fileName += 'nuqtali_vergul'; break;
+                        case ':': fileName += 'ikki_nuqta'; break;
+                        case '?': fileName += 'soroq'; break;
+                        case '!': fileName += 'undov'; break;
+                        case '-': fileName += 'tire'; break;
+                        case '(': fileName += 'qavs_ochilish'; break;
+                        case ')': fileName += 'qavs_yopilish'; break;
+                        case '"': fileName += 'qoshtirnoq'; break;
+                        default: fileName += symbol;
+                    }
+                    fileName += ').txt';
+
+                    // Faylni yaratish va yuklab olish
+                    const blob = new Blob([result], { type: 'text/plain' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
                 }
-            }
+            });
         }
 
         function updateUploadedFiles() {
-            const filesDiv = document.getElementById('uploadedFiles');
-            filesDiv.innerHTML = '';
-            
-            uploadedFilesList.forEach(fileName => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                fileItem.innerHTML = `
-                    <i class="fas fa-file-alt"></i>
-                    <span>${fileName}</span>
-                `;
-                filesDiv.appendChild(fileItem);
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const fileDiv = document.createElement('div');
+                fileDiv.style.display = 'flex';
+                fileDiv.style.justifyContent = 'space-between';
+                fileDiv.style.alignItems = 'center';
+                
+                const fileName = document.createElement('span');
+                fileName.innerHTML = '<i class="fas fa-file-alt" style="margin-right: 10px; color: #1565C0;"></i>' + file.name;
+                fileName.style.color = '#0D47A1';
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '&times;';
+                deleteButton.style.border = 'none';
+                deleteButton.style.background = '#fff';
+                deleteButton.style.color = '#ff4757';
+                deleteButton.style.fontSize = '20px';
+                deleteButton.style.cursor = 'pointer';
+                deleteButton.style.padding = '2px 8px';
+                deleteButton.style.borderRadius = '4px';
+                deleteButton.style.transition = 'all 0.3s ease';
+                deleteButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                
+                deleteButton.onmouseover = () => {
+                    deleteButton.style.background = '#ff4757';
+                    deleteButton.style.color = '#fff';
+                    deleteButton.style.transform = 'scale(1.1)';
+                };
+                deleteButton.onmouseout = () => {
+                    deleteButton.style.background = '#fff';
+                    deleteButton.style.color = '#ff4757';
+                    deleteButton.style.transform = 'scale(1)';
+                };
+                
+                deleteButton.onclick = () => {
+                    uploadedFiles.splice(index, 1);
+                    updateUploadedFiles();
+                };
+                
+                fileDiv.appendChild(fileName);
+                fileDiv.appendChild(deleteButton);
+                fileList.appendChild(fileDiv);
             });
         }
     </script>
