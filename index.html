@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="uz">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -177,7 +178,8 @@
             table-layout: fixed;
         }
 
-        th, td {
+        th,
+        td {
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #eef0f7;
@@ -195,11 +197,31 @@
             letter-spacing: 1px;
         }
 
-        th:nth-child(1) { width: 25%; }  /* Fayl nomi */
-        th:nth-child(2) { width: 25%; }  /* 1-so'z */
-        th:nth-child(3) { width: 25%; }  /* 2-so'z */
-        th:nth-child(4) { width: 15%; }  /* Belgi */
-        th:nth-child(5) { width: 25%; }  /* 3-so'z */
+        th:nth-child(1) {
+            width: 25%;
+        }
+
+        /* Fayl nomi */
+        th:nth-child(2) {
+            width: 25%;
+        }
+
+        /* 1-so'z */
+        th:nth-child(3) {
+            width: 25%;
+        }
+
+        /* 2-so'z */
+        th:nth-child(4) {
+            width: 15%;
+        }
+
+        /* Belgi */
+        th:nth-child(5) {
+            width: 25%;
+        }
+
+        /* 3-so'z */
 
         td {
             color: #2d3436;
@@ -300,6 +322,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -318,12 +341,12 @@
             gap: 10px;
             font-weight: 500;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .file-input-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         .file-input-button i {
@@ -387,26 +410,27 @@
             overflow-y: auto;
         }
 
-        .file-list > div {
+        .file-list>div {
             background: linear-gradient(135deg, #E3F2FD 0%, #90CAF9 100%);
             padding: 10px 15px;
             border-radius: 8px;
             margin-bottom: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
             border-left: 4px solid #2196F3;
         }
 
-        .file-list > div:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        .file-list>div:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transform: translateX(5px);
         }
 
-        .file-list > div:last-child {
+        .file-list>div:last-child {
             margin-bottom: 0;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h2>Text Analiz Dasturi</h2>
@@ -426,8 +450,8 @@
                 <option value="?">So'roq belgisi (?)</option>
                 <option value="!">Undov belgisi (!)</option>
                 <option value="–">Tire (–)</option>
-                <option value="("">Qavslar (())</option>
-                <option value='""'>Qoshtirnoq ("")</option>
+                <option value="(">Qavslar(())</option>
+                <option value='"'>Qo'shtirnoq ("")</option>
                 <option value="...">Uch nuqta (...)</option>
                 <option value="all">Barchasi</option>
             </select>
@@ -466,13 +490,13 @@
                     word = word.replace(match, match.toLowerCase());
                 });
             }
-            
+
             // Belgilarni tozalash
             word = word.replace(/[^a-zA-Z0-9\s'а-яА-ЯёЁўЎғҒқҚҳҲ]/g, '');
-            
+
             // Bo'sh joylarni olib tashlash
             word = word.trim();
-            
+
             return word;
         }
 
@@ -481,7 +505,7 @@
                 const file = input.files[0];
                 if (!uploadedFiles.some(f => f.name === file.name)) {
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         fileContents.set(file.name, e.target.result);
                         uploadedFiles.push(file);
                         updateUploadedFiles();
@@ -506,7 +530,7 @@
                 const results = [];
 
                 if (punctuation === 'all') {
-                    const regex = new RegExp(`([^\\s]+)\\s+([^\\s]+)\\s*([.,;:?!–("")...])\\s+([^\\s]+)`, 'g');
+                    const regex = /([^\s]+)\s+([^\s]+)\s*([.,;:?!–"(])\s*([^\s]+)/g;
                     let match;
 
                     while ((match = regex.exec(text)) !== null) {
@@ -526,9 +550,16 @@
                         }
                     }
                 } else {
-                    const regex = new RegExp(`([^\\s]+)\\s+([^\\s]+)\\s*\\${punctuation}\\s+([^\\s]+)`, 'g');
+                    let regex;
+                    if (punctuation === '"') {
+                        regex = /([^\s]+)\s+([^\s]+)\s*"([^\s]+)/g;
+                    } else if (punctuation === '(') {
+                        regex = /([^\s]+)\s+([^\s]+)\s*\(([^\s]+)/g;
+                    } else {
+                        regex = new RegExp(`([^\\s]+)\\s+([^\\s]+)\\s*\\${punctuation}\\s+([^\\s]+)`, 'g');
+                    }
+                    
                     let match;
-
                     while ((match = regex.exec(text)) !== null) {
                         const firstWord = cleanWord(match[1]);
                         const secondWord = cleanWord(match[2]);
@@ -539,7 +570,8 @@
                                 fileName: file.name,
                                 first: firstWord,
                                 second: secondWord,
-                                mark: punctuation,
+                                mark: punctuation === '"' ? '"' : 
+                                      punctuation === '(' ? '(' : punctuation,
                                 third: thirdWord
                             });
                         }
@@ -574,11 +606,11 @@
             }
 
             // Barcha belgilar ro'yxati
-            const allSymbols = ['!', '?', '.', ',', ':', ';', '-', '(', ')', '"'];
-            
+            const allSymbols = ['!', '?', '.', ',', ':', ';', '-', '(', '"'];
+
             // Tanlangan belgilarni olish
             let selectedSymbols = Array.from(selectElement.selectedOptions).map(option => option.value);
-            
+
             // Agar "all" tanlangan bo'lsa, barcha belgilarni ishlatamiz
             if (selectedSymbols.includes('all')) {
                 selectedSymbols = allSymbols;
@@ -597,10 +629,10 @@
             selectedSymbols.forEach(symbol => {
                 let result = '';
                 let currentFileName = '';
-                
+
                 // Faqat tanlangan belgiga mos keladigan natijalarni filtrlash
                 const filteredResults = allResults.filter(item => item.mark === symbol);
-                
+
                 if (filteredResults.length > 0) {
                     // Fayllar bo'yicha guruhlash
                     const fileGroups = {};
@@ -614,34 +646,34 @@
                     // Har bir fayl uchun natijalarni formatlash
                     Object.keys(fileGroups).forEach(fileName => {
                         result += `(${fileName})\n`;
-                        result += '1-so\'z'.padEnd(col1Width) + 
-                                 '2-so\'z'.padEnd(col2Width) + 
-                                 'Belgi'.padEnd(col3Width) + 
-                                 '3-so\'z\n';
+                        result += '1-so\'z'.padEnd(col1Width) +
+                            '2-so\'z'.padEnd(col2Width) +
+                            'Belgi'.padEnd(col3Width) +
+                            '3-so\'z\n';
                         result += '-'.repeat(85) + '\n';
 
                         fileGroups[fileName].forEach(item => {
-                            const first = item.first.length > col1Width - 2 ? 
-                                item.first.substring(0, col1Width - 3) + '.' : 
+                            const first = item.first.length > col1Width - 2 ?
+                                item.first.substring(0, col1Width - 3) + '.' :
                                 item.first;
-                            const second = item.second.length > col2Width - 2 ? 
-                                item.second.substring(0, col2Width - 3) + '.' : 
+                            const second = item.second.length > col2Width - 2 ?
+                                item.second.substring(0, col2Width - 3) + '.' :
                                 item.second;
-                            const third = item.third.length > col4Width - 2 ? 
-                                item.third.substring(0, col4Width - 3) + '.' : 
+                            const third = item.third.length > col4Width - 2 ?
+                                item.third.substring(0, col4Width - 3) + '.' :
                                 item.third;
 
-                            result += first.padEnd(col1Width) + 
-                                     second.padEnd(col2Width) + 
-                                     item.mark.padEnd(col3Width) + 
-                                     third + '\n';
+                            result += first.padEnd(col1Width) +
+                                second.padEnd(col2Width) +
+                                item.mark.padEnd(col3Width) +
+                                third + '\n';
                         });
                         result += '\n\n';
                     });
 
                     // Fayl nomini belgi bo'yicha aniqlash
                     let fileName = 'tahlil_natijasi(';
-                    switch(symbol) {
+                    switch (symbol) {
                         case '.': fileName += 'nuqta'; break;
                         case ',': fileName += 'vergul'; break;
                         case ';': fileName += 'nuqtali_vergul'; break;
@@ -650,7 +682,6 @@
                         case '!': fileName += 'undov'; break;
                         case '-': fileName += 'tire'; break;
                         case '(': fileName += 'qavs_ochilish'; break;
-                        case ')': fileName += 'qavs_yopilish'; break;
                         case '"': fileName += 'qoshtirnoq'; break;
                         default: fileName += symbol;
                     }
@@ -670,6 +701,19 @@
             });
         }
 
+        function removeFile(fileName) {
+            // Faylni ro'yxatdan o'chirish
+            uploadedFiles = uploadedFiles.filter(file => file.name !== fileName);
+            fileContents.delete(fileName);
+
+            // Shu fayl bilan bog'liq natijalarni o'chirish
+            allResults = allResults.filter(result => result.fileName !== fileName);
+
+            // Jadval va fayl ro'yxatini yangilash
+            updateUploadedFiles();
+            updateTable();
+        }
+
         function updateUploadedFiles() {
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
@@ -678,11 +722,11 @@
                 fileDiv.style.display = 'flex';
                 fileDiv.style.justifyContent = 'space-between';
                 fileDiv.style.alignItems = 'center';
-                
+
                 const fileName = document.createElement('span');
                 fileName.innerHTML = '<i class="fas fa-file-alt" style="margin-right: 10px; color: #1565C0;"></i>' + file.name;
                 fileName.style.color = '#0D47A1';
-                
+
                 const deleteButton = document.createElement('button');
                 deleteButton.innerHTML = '&times;';
                 deleteButton.style.border = 'none';
@@ -694,7 +738,7 @@
                 deleteButton.style.borderRadius = '4px';
                 deleteButton.style.transition = 'all 0.3s ease';
                 deleteButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                
+
                 deleteButton.onmouseover = () => {
                     deleteButton.style.background = '#ff4757';
                     deleteButton.style.color = '#fff';
@@ -705,12 +749,11 @@
                     deleteButton.style.color = '#ff4757';
                     deleteButton.style.transform = 'scale(1)';
                 };
-                
+
                 deleteButton.onclick = () => {
-                    uploadedFiles.splice(index, 1);
-                    updateUploadedFiles();
+                    removeFile(file.name);
                 };
-                
+
                 fileDiv.appendChild(fileName);
                 fileDiv.appendChild(deleteButton);
                 fileList.appendChild(fileDiv);
@@ -718,4 +761,5 @@
         }
     </script>
 </body>
+
 </html>
